@@ -47,6 +47,4 @@ android {
 
 dependencies {
     implementation 'com.github.nizwar:openvpn_library:5f06771b85'
-    implementation("androidx.activity:activity:1.9.0")
-    implementation("androidx.fragment:fragment:1.7.1")
 }

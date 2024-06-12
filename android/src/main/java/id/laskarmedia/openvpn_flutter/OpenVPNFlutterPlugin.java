@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.VpnService;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
@@ -18,11 +19,12 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
 
 /**
  * OpenvpnFlutterPlugin
  */
-public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware {
+public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware, PluginRegistry.ActivityResultListener {
 
     private MethodChannel vpnControlMethod;
     private EventChannel vpnStageEvent;
@@ -43,9 +45,19 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware {
 
     Context mContext;
 
+    static MethodChannel.Result result;
+
+    // set result
+    public static void setResult(MethodChannel.Result methodChannelResult) {
+        result = methodChannelResult;
+    }
 
     public static void connectWhileGranted(boolean granted) {
-        if (granted) {
+        if (result != null) {
+            result.success(granted);
+        }
+
+        if (granted && vpnHelper != null && config != null && !config.isEmpty()) {
             vpnHelper.startVPN(config, username, password, name, bypassPackages);
         }
     }
@@ -68,6 +80,7 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware {
         });
 
         vpnControlMethod.setMethodCallHandler((call, result) -> {
+            setResult(result);
 
             switch (call.method) {
                 case "status":
@@ -134,12 +147,18 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware {
                     final Intent request = VpnService.prepare(activity);
                     if (request != null) {
                         activity.startActivityForResult(request, 24);
+                        return;
+                    }
+                    result.success(true);
+                    break;
+                case "check_permission":
+                    final Intent checkPermission = VpnService.prepare(activity);
+                    if (checkPermission != null) {
                         result.success(false);
                         return;
                     }
                     result.success(true);
                     break;
-
                 default:
             }
         });
@@ -186,5 +205,19 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware {
     @Override
     public void onDetachedFromActivity() {
 
+    }
+
+    @Override
+    public boolean onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == 24) {
+            if (result != null && resultCode == Activity.RESULT_OK) {
+                result.success(true);
+                return true;
+            } else if (result != null) {
+                result.success(false);
+            }
+        }
+
+        return false;
     }
 }

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math'; 
+import 'dart:math';
 import 'package:flutter/services.dart';
 import 'model/vpn_status.dart';
 
@@ -216,6 +216,13 @@ class OpenVPN {
   Future<bool> requestPermissionAndroid() async {
     return _channelControl
         .invokeMethod("request_permission")
+        .then((value) => value ?? false);
+  }
+
+  ///Check android permission [true] if already granted, [false] if not
+  Future<bool> checkPermissionAndroid() async {
+    return _channelControl
+        .invokeMethod("check_permission")
         .then((value) => value ?? false);
   }
 

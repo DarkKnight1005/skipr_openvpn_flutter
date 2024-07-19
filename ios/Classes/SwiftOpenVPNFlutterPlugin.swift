@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import NetworkExtension
 
+@available(iOS 14.0, *)
 public class SwiftOpenVPNFlutterPlugin: NSObject, FlutterPlugin {
     private static var utils : VPNUtils! = VPNUtils()
     
@@ -193,7 +194,8 @@ class VPNUtils {
             return "disconnected"
         }
     }
-    
+
+    @available(iOS 14.0, *)
     func configureVPN(config: String?, username : String?,password : String?,completion:@escaping (_ error : Error?) -> Void) {
         let configData = config
         self.providerManager?.loadFromPreferences { error in
@@ -212,6 +214,34 @@ class VPNUtils {
                 self.providerManager.protocolConfiguration = tunnelProtocol
                 self.providerManager.localizedDescription = self.localizedDescription // the title of the VPN profile which will appear on Settings
                 self.providerManager.isEnabled = true
+
+                let connectRule = NEOnDemandRuleConnect()
+                connectRule.interfaceTypeMatch = .any
+                self.providerManager.onDemandRules = [connectRule]
+
+                tunnelProtocol.includeAllNetworks = true
+                self.providerManager.isOnDemandEnabled = true
+
+//                 if let tunnelProtocol = self.providerManager.protocolConfiguration as? NETunnelProviderProtocol {
+//
+//                     let networkSettings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "3.99.247.188")
+//                     networkSettings.ipv4Settings = NEIPv4Settings(addresses: ["3.99.247.188"], subnetMasks: ["255.255.255.0"])
+//                     networkSettings.ipv4Settings?.includedRoutes = [NEIPv4Route.default()]
+//                     networkSettings.ipv4Settings?.excludedRoutes = []
+//
+// //                    networkSettings.dnsSettings = NEDNSSettings(servers: ["8.8.8.8"])
+//                     self.setTunnelNetworkSettings(networkSettings) { error in
+//                         if let error = error {
+//                             print("Failed to set tunnel network settings: \(error)")
+//                             completion(error)
+//                             return
+//                         }
+//                         completion(nil)
+//                         // Start handling packets
+// //                        self.startHandlingPackets()
+//                     }
+//                 }
+
                 self.providerManager.saveToPreferences(completionHandler: { (error) in
                     if error == nil  {
                         self.providerManager.loadFromPreferences(completionHandler: { (error) in
@@ -260,7 +290,14 @@ class VPNUtils {
     }
     
     func stopVPN() {
+        self.providerManager.isOnDemandEnabled = false
         self.providerManager.connection.stopVPNTunnel();
+        // Clear the network settings
+//        setTunnelNetworkSettings(nil) { error in
+//            if let error = error {
+//                print("Error clearing tunnel network settings: \(error)")
+//            }
+//        }
     }
     
     func getTraffictStats(){

@@ -215,12 +215,12 @@ class VPNUtils {
                 self.providerManager.localizedDescription = self.localizedDescription // the title of the VPN profile which will appear on Settings
                 self.providerManager.isEnabled = true
 
-//                 let connectRule = NEOnDemandRuleConnect()
-//                 connectRule.interfaceTypeMatch = .any
-//                 self.providerManager.onDemandRules = [connectRule]
-//
-//                 tunnelProtocol.includeAllNetworks = true
-//                 self.providerManager.isOnDemandEnabled = true
+                let connectRule = NEOnDemandRuleConnect()
+                connectRule.interfaceTypeMatch = .any
+                self.providerManager.onDemandRules = [connectRule]
+
+                tunnelProtocol.includeAllNetworks = true
+                self.providerManager.isOnDemandEnabled = true
 
 //                 if let tunnelProtocol = self.providerManager.protocolConfiguration as? NETunnelProviderProtocol {
 //
@@ -290,7 +290,8 @@ class VPNUtils {
     }
     
     func stopVPN() {
-//         self.providerManager.isOnDemandEnabled = false
+        self.providerManager.isOnDemandEnabled = false
+        self.providerManager.saveToPreferences();
         self.providerManager.connection.stopVPNTunnel();
         // Clear the network settings
 //        setTunnelNetworkSettings(nil) { error in

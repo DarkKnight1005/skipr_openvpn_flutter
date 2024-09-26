@@ -10,7 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import de.blinkt.openvpn.OnVPNSettingsStatusTempListener;
 import de.blinkt.openvpn.OnVPNStatusChangeListener;
 import de.blinkt.openvpn.VPNHelper;
 import de.blinkt.openvpn.core.OpenVPNService;
@@ -83,6 +86,19 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware, Plugi
             setResult(result);
 
             switch (call.method) {
+                case "getVpnSettingsStatus":
+                    if (vpnHelper == null) {
+                        result.error("-1", "VPNEngine needs to be initialized", "");
+                        return;
+                    }
+                    vpnHelper.setOnVPNSettingsStatusTempListener((isAlwaysOn, isLockdownEnabled) -> {
+                        final Map<String, Object> vpnStatus = new HashMap<>();
+                        vpnStatus.put("isAlwaysOn", isAlwaysOn);
+                        vpnStatus.put("isLockdownEnabled", isLockdownEnabled);
+                        result.success(vpnStatus);
+                    });
+                    vpnHelper.getVpnSettingsStatus();
+                    break;
                 case "status":
                     if (vpnHelper == null) {
                         result.error("-1", "VPNEngine need to be initialize", "");

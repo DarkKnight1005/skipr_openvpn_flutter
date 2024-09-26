@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/services.dart';
+import 'package:openvpn_flutter/src/model/vpn_settings_status.dart';
 import 'model/vpn_status.dart';
 
 ///Stages of vpn connections
@@ -44,7 +45,7 @@ class OpenVPN {
 
   ///Method channel to invoke methods from native side
   static const MethodChannel _channelControl =
-      MethodChannel(_methodChannelVpnControl);
+  MethodChannel(_methodChannelVpnControl);
 
   ///Snapshot of stream that produced by native side
   static Stream<String> _vpnStageSnapshot() =>
@@ -93,10 +94,10 @@ class OpenVPN {
   }) async {
     if (Platform.isIOS) {
       assert(
-          groupIdentifier != null &&
-              providerBundleIdentifier != null &&
-              localizedDescription != null,
-          "These values are required for ios.");
+      groupIdentifier != null &&
+          providerBundleIdentifier != null &&
+          localizedDescription != null,
+      "These values are required for ios.");
     }
     onVpnStatusChanged?.call(VpnStatus.empty());
     initialized = true;
@@ -130,14 +131,14 @@ class OpenVPN {
   ///
   ///bypassPackages : exclude some apps to access/use the VPN Connection, it was List<String> of applications package's name (Android Only)
   Future connect(
-    String config,
-    String name, {
-    String? username,
-    String? password,
-    List<String>? bypassPackages,
-    String? serverAddress,
-    bool certIsRequired = false,
-  }) {
+      String config,
+      String name, {
+        String? username,
+        String? password,
+        List<String>? bypassPackages,
+        String? serverAddress,
+        bool certIsRequired = false,
+      }) {
     if (!initialized) throw ("OpenVPN need to be initialized");
     if (!certIsRequired) config += "client-cert-not-required";
     _tempDateTime = DateTime.now();
@@ -163,6 +164,19 @@ class OpenVPN {
     if (_vpnStatusTimer?.isActive ?? false) {
       _vpnStatusTimer?.cancel();
       _vpnStatusTimer = null;
+    }
+  }
+
+  Future<VpnSettingsStatus?> getVpnSettingsStatus() async {
+    try {
+      final Map<dynamic, dynamic> result = await _channelControl.invokeMethod('getVpnSettingsStatus');
+      return VpnSettingsStatus(
+        isAlwaysOn: result['isAlwaysOn'] as bool?,
+        isLockdownEnabled: result['isLockdownEnabled'] as bool?,
+      );
+    } catch (e) {
+      print('Failed to get VPN status: $e');
+      return null;
     }
   }
 
@@ -204,9 +218,9 @@ class OpenVPN {
                     _tempDateTime ??
                     DateTime.now();
             String byteIn =
-                data["byte_in"] != null ? data["byte_in"].toString() : "0";
+            data["byte_in"] != null ? data["byte_in"].toString() : "0";
             String byteOut =
-                data["byte_out"] != null ? data["byte_out"].toString() : "0";
+            data["byte_out"] != null ? data["byte_out"].toString() : "0";
             if (byteIn.trim().isEmpty) byteIn = "0";
             if (byteOut.trim().isEmpty) byteOut = "0";
             return VpnStatus(
@@ -320,7 +334,7 @@ class OpenVPN {
     }
     _vpnStatusTimer ??=
         Timer.periodic(const Duration(seconds: 1), (timer) async {
-      onVpnStatusChanged?.call(await status());
-    });
+          onVpnStatusChanged?.call(await status());
+        });
   }
 }

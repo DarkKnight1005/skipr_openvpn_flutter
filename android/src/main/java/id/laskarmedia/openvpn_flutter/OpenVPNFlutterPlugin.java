@@ -42,6 +42,7 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware, Plugi
     private static String config = "", username = "", password = "", name = "";
 
     private static ArrayList<String> bypassPackages;
+    private static Boolean isNonGoogleDevice;
     @SuppressLint("StaticFieldLeak")
     private static VPNHelper vpnHelper;
     private Activity activity;
@@ -63,7 +64,7 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware, Plugi
         }
 
         if (granted && vpnHelper != null && config != null && !config.isEmpty()) {
-            vpnHelper.startVPN(config, username, password, name, bypassPackages);
+            vpnHelper.startVPN(config, username, password, name, bypassPackages, isNonGoogleDevice);
         }
     }
 
@@ -141,6 +142,7 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware, Plugi
                     username = call.argument("username");
                     password = call.argument("password");
                     bypassPackages = call.argument("bypass_packages");
+                    isNonGoogleDevice = call.argument("is_non_google_device");
 
                     if (config == null) {
                         result.error("-2", "OpenVPN Config is required", "");
@@ -152,7 +154,7 @@ public class OpenVPNFlutterPlugin implements FlutterPlugin, ActivityAware, Plugi
                         activity.startActivityForResult(permission, 24);
                         return;
                     }
-                    vpnHelper.startVPN(config, username, password, name, bypassPackages);
+                    vpnHelper.startVPN(config, username, password, name, bypassPackages, isNonGoogleDevice);
                     break;
                 case "stage":
                     if (vpnHelper == null) {

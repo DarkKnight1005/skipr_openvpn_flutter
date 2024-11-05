@@ -46,5 +46,5 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.DarkKnight1005:openvpn_library:3712c4baeb59efac2c56bb5bbdedd818f5f49698'
+    implementation 'com.github.DarkKnight1005:openvpn_library:26efeab1184edffe7a390aa90d22bb6182e70395'
 }

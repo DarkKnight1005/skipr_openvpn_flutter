@@ -136,6 +136,7 @@ class OpenVPN {
         String? username,
         String? password,
         List<String>? bypassPackages,
+        bool? isNonGoogleDevice,
         String? serverAddress,
         bool certIsRequired = false,
       }) {
@@ -150,7 +151,8 @@ class OpenVPN {
         "username": username,
         "password": password,
         "server_address": serverAddress,
-        "bypass_packages": bypassPackages ?? []
+        "bypass_packages": bypassPackages ?? [],
+        "is_non_google_device": isNonGoogleDevice ?? false,
       });
     } on PlatformException catch (e) {
       throw ArgumentError(e.message);

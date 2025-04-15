@@ -236,9 +236,9 @@ class VPNUtils {
                 
                 tunnelProtocol.includeAllNetworks = true
                 
-                self.providerManager.isOnDemandEnabled = true
+                self.providerManager.isOnDemandEnabled = false
                 
-                self.providerManager.onDemandRules = onDemandRules
+                self.providerManager.onDemandRules = []
                 
                 self.providerManager.protocolConfiguration = tunnelProtocol
                 self.providerManager.localizedDescription = self.localizedDescription // the title of the VPN profile which will appear on Settings
@@ -374,6 +374,7 @@ class VPNUtils {
     func stopVPN() {
         
         self.providerManager.isOnDemandEnabled = false
+        self.providerManager.onDemandRules = []
         self.providerManager.saveToPreferences();
         self.providerManager.connection.stopVPNTunnel();
         
